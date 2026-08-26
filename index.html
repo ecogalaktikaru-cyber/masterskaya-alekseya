@@ -694,6 +694,56 @@ footer{background:var(--ink);color:#8F8474;border-top:1px solid #2A251E;padding:
 // шапка: граница при скролле
 const header = document.getElementById('header');
 addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 10), {passive: true});
+
+// ---------- калькулятор ----------
+// TODO: заменить на реальные цифры клиента
+const BASE = 38000; // ₽/м² базовой каркасной коробки под ключ
+const MAT = [1, 1.25, 1.5, 1.65];
+const TER = [0, 120000, 260000];
+const STN = [0, 150000, 320000, 520000];
+const MAT_NAMES = ['Каркас', 'Сухой брус', 'Клеёный брус', 'Бревно ручной рубки'];
+const TER_NAMES = ['без террасы', 'открытая терраса', 'терраса под кровлей'];
+const STN_NAMES = ['', 'портал печи', 'портал и цоколь', 'камень и очаг'];
+
+const state = {area: 28, mat: 1, ter: 1, stn: 0};
+
+function fmtSum(v) {
+  if (v >= 9.95e5) return (Math.round(v / 1e5) / 10).toLocaleString('ru-RU', {minimumFractionDigits: 1}).replace(',0', '') + ' млн';
+  return Math.round(v / 1e4) * 10 + ' тыс';
+}
+function priceRange() {
+  const total = state.area * BASE * MAT[state.mat] + TER[state.ter] + STN[state.stn];
+  const lo = total * 0.92, hi = total * 1.12;
+  const l = fmtSum(lo), h = fmtSum(hi);
+  const lu = l.split(' ')[1], hu = h.split(' ')[1];
+  return (lu === hu ? l.split(' ')[0] : l) + ' — ' + h + ' ₽';
+}
+function confLine() {
+  let s = `${MAT_NAMES[state.mat]} · ${state.area} м² · ${TER_NAMES[state.ter]}`;
+  if (state.stn > 0) s += ` · ${STN_NAMES[state.stn]}`;
+  return s;
+}
+function recalc() {
+  document.getElementById('calc-price').textContent = priceRange();
+  document.getElementById('calc-conf').textContent = confLine();
+}
+
+const areaInput = document.getElementById('area');
+areaInput.addEventListener('input', () => {
+  state.area = +areaInput.value;
+  document.getElementById('area-out').textContent = state.area;
+  recalc();
+});
+document.querySelectorAll('.opts').forEach(group => {
+  group.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+    state[group.dataset.group] = +btn.dataset.i;
+    recalc();
+  });
+});
+recalc();
 </script>
 </body>
 </html>
