@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ecogalaktikaru-cyber.github.io/pervy-par/sitemap.xml
